@@ -1,19 +1,26 @@
 import arrayMin from './min';
 import arrayMax from './max';
 
-export default ({ data, limit, width = 1, height = 1, margin = 0, max = arrayMax(data), min = arrayMin(data) }) => {
+export default ({ data, limit, width = 1, height = 1, margin = 0, max, min }) => {
+    var curves = data;
+    if (!Array.isArray(data[0])) curves = [data];
 
-    const len = data.length;
+    if (max === undefined) max = arrayMax(curves.map((curve) => arrayMax(curve)));
+    if (min === undefined) min = arrayMin(curves.map((curve) => arrayMin(curve)));
+
+    const len = arrayMax(curves.map((curve) => curve.length));
 
     if (limit && limit < len) {
-        data = data.slice(len - limit);
+        curves = curves.map((curve) => curve.slice(len - limit));
     }
 
     const vfactor = (height - margin * 2) / ((max - min) || 2);
     const hfactor = (width - margin * 2) / ((limit || len) - (len > 1 ? 1 : 0));
 
-    return data.map((d, i) => ({
-        x: i * hfactor + margin,
-        y: (max === min ? 1 : (max - d)) * vfactor + margin
-    }));
+    return curves.map((curve) =>
+        curve.map((d, i) => ({
+            x: i * hfactor + margin,
+            y: (max === min ? 1 : (max - d)) * vfactor + margin
+        }))
+    );
 };
